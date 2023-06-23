@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -79,18 +80,23 @@ public class QrMobileVisionPlugin implements MethodCallHandler, QrReaderCallback
 
     @Override
     public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Log.i("CAMERA QR", "Requested with code: " + requestCode);
+        Log.i("CAMERA QR", "Requested with data: " + Arrays.toString(permissions));
+        Log.i("CAMERA QR", "Requested with data2: " + Arrays.toString(grantResults));
         if (requestCode == REQUEST_PERMISSION) {
-            waitingForPermissionResult = false;
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.i(TAG, "Permissions request granted.");
-                stopReader();
-            } else {
-                Log.i(TAG, "Permissions request denied.");
-                permissionDenied = true;
-                startingFailed(new QrReader.Exception(QrReader.Exception.Reason.noPermissions));
-                stopReader();
+            if(Arrays.asList(permissions).contains("android.permission.CAMERA")) {
+                waitingForPermissionResult = false;
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.i(TAG, "Permissions request granted.");
+                    stopReader();
+                } else {
+                    Log.i(TAG, "Permissions request denied.");
+                    permissionDenied = true;
+                    startingFailed(new QrReader.Exception(QrReader.Exception.Reason.noPermissions));
+                    stopReader();
+                }
+                return true;
             }
-            return true;
         }
         return false;
     }
